@@ -30,6 +30,7 @@ A banker-facing Core Banking System built using React, Node.js, Express, TypeScr
 
 ### Database
 - PostgreSQL
+- Drizzle ORM
 
 ## Project Structure
 
