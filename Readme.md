@@ -35,7 +35,7 @@ A banker-facing Core Banking System built using React, Node.js, Express, TypeScr
 
 ```text
 NIDHI-BANK/
-├── frontend/
 ├── backend/
+├── frontend/
 ├── .gitignore
 └── README.md
