@@ -4,404 +4,481 @@ import { sql } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 
 async function seedDatabase() {
-  console.log('🌱 Starting multi-branch synchronized database seeding...');
+  console.log('🌱 Starting realistic demo database seeding...');
   const startTime = Date.now();
 
   try {
-    // 🧹 AUTOMATIC CLEANUP: Clear old data to prevent duplicate key errors
-    console.log('🧹 Clearing existing database tables...');
-    await db.delete(schema.loanSchedules);
-    await db.delete(schema.loanDetails);
-    await db.delete(schema.transactions);
-    await db.delete(schema.accounts);
-    await db.delete(schema.customers);
-    await db.delete(schema.bankers);
-    await db.delete(schema.branches);
+    // Wrap the entire seeding process inside a transaction for atomicity
+    await db.transaction(async (tx) => {
+      // Clear old data
+      console.log('🧹 Clearing existing database tables...');
+      await tx.delete(schema.loanSchedules);
+      await tx.delete(schema.loanDetails);
+      await tx.delete(schema.transactions);
+      await tx.delete(schema.accounts);
+      await tx.delete(schema.customers);
+      await tx.delete(schema.bankers);
+      await tx.delete(schema.branches);
 
-    // 1. Securely Hash Password
-    const hashedPassword = await bcrypt.hash('Banker@123', 10);
+      const hashedPassword = await bcrypt.hash('Banker@123', 10);
 
-    // 2. Insert Branches
-    console.log('🏢 Setting up branches (BLR001 & BLR002)...');
-    await db.insert(schema.branches).values([
-      {
-        branch_id: 'BLR001',
-        branch_name: 'Bengaluru Central Branch',
-        ifsc_code: 'BLR0001001',
-        address: 'MG Road, Financial District, Bengaluru',
-      },
-      {
-        branch_id: 'BLR002',
-        branch_name: 'Bengaluru Tech Park Branch',
-        ifsc_code: 'BLR0001002',
-        address: 'Electronic City Phase 1, Bengaluru',
-      },
-    ]).onConflictDoNothing();
+      // 1. Two branches
+      await tx.insert(schema.branches).values([
+        {
+          branch_id: 'BLR001',
+          branch_name: 'Bengaluru Central Branch',
+          ifsc_code: 'BLR0001001',
+          address: 'MG Road, Bengaluru',
+        },
+        {
+          branch_id: 'BLR002',
+          branch_name: 'Bengaluru Tech Park Branch',
+          ifsc_code: 'BLR0001002',
+          address: 'Electronic City Phase 1, Bengaluru',
+        },
+      ]);
 
-    // 3. Insert Branch Bankers
-    console.log('👨‍💼 Setting up designated branch bankers...');
-    await db.insert(schema.bankers).values([
-      {
-        banker_id: 'BA00001',
-        employee_id: 'EMP1001',
-        name: 'Branch Manager BLR001',
-        password_hash: hashedPassword,
-        branch_id: 'BLR001',
-      },
-      {
-        banker_id: 'BA00002',
-        employee_id: 'EMP1002',
-        name: 'Branch Manager BLR002',
-        password_hash: hashedPassword,
-        branch_id: 'BLR002',
-      },
-    ]).onConflictDoNothing();
+      // 2. One banker per branch
+      await tx.insert(schema.bankers).values([
+        {
+          banker_id: 'BA00001',
+          employee_id: 'EMP1001',
+          name: 'Ananya Rao',
+          password_hash: hashedPassword,
+          branch_id: 'BLR001',
+        },
+        {
+          banker_id: 'BA00002',
+          employee_id: 'EMP1002',
+          name: 'Arjun Mehta',
+          password_hash: hashedPassword,
+          branch_id: 'BLR002',
+        },
+      ]);
 
-    // Real name pools
-    const realFirstNames = [
-      'Aman', 'Aastha', 'Rohan', 'Priya', 'Rahul', 'Neha', 'Vikram', 'Anjali', 
-      'Karan', 'Pooja', 'Abhishek', 'Sneha', 'Aditya', 'Divya', 'Siddharth', 'Megha', 
-      'Akash', 'Kritika', 'Varun', 'Swati', 'Manish', 'Tanvi', 'Nikhil', 'Ritu', 
-      'Deepak', 'Shreya', 'Gaurav', 'Pallavi', 'Kunal', 'Jyoti'
-    ];
-    const realLastNames = [
-      'Sharma', 'Verma', 'Gupta', 'Kumar', 'Singh', 'Patel', 'Reddy', 'Mehra', 
-      'Chopra', 'Malhotra', 'Joshi', 'Mishra', 'Tiwari', 'Saxena', 'Bansal', 'Agarwal', 
-      'Iyer', 'Nair', 'Pillai', 'Rao', 'Deshmukh', 'Kulkarni', 'Jadhav', 'Pawar', 
-      'Chavan', 'Shinde', 'Gokhale', 'Jain', 'Mehta', 'Shah'
-    ];
+      // Realistic demo customers
+      const branch1Customers = [
+        ['Aarav', 'Sharma', '1993-04-12', 'Male', 'Married', '9876501001', 'aarav.sharma@example.com', 'Koramangala'],
+        ['Priya', 'Nair', '1995-08-23', 'Female', 'Single', '9876501002', 'priya.nair@example.com', 'Indiranagar'],
+        ['Rohan', 'Mehta', '1989-11-05', 'Male', 'Married', '9876501003', 'rohan.mehta@example.com', 'Jayanagar'],
+        ['Sneha', 'Iyer', '1994-02-17', 'Female', 'Married', '9876501004', 'sneha.iyer@example.com', 'HSR Layout'],
+        ['Vikram', 'Reddy', '1987-06-29', 'Male', 'Married', '9876501005', 'vikram.reddy@example.com', 'BTM Layout'],
+        ['Neha', 'Kapoor', '1996-09-14', 'Female', 'Single', '9876501006', 'neha.kapoor@example.com', 'Whitefield'],
+        ['Karan', 'Malhotra', '1991-12-02', 'Male', 'Married', '9876501007', 'karan.malhotra@example.com', 'Rajajinagar'],
+        ['Divya', 'Sharma', '1997-03-21', 'Female', 'Single', '9876501008', 'divya.sharma@example.com', 'Malleshwaram'],
+        ['Aditya', 'Verma', '1990-07-18', 'Male', 'Married', '9876501009', 'aditya.verma@example.com', 'Banashankari'],
+        ['Megha', 'Joshi', '1993-10-30', 'Female', 'Married', '9876501010', 'megha.joshi@example.com', 'Basavanagudi'],
+        ['Rahul', 'Gupta', '1988-05-09', 'Male', 'Married', '9876501011', 'rahul.gupta@example.com', 'Yeshwanthpur'],
+        ['Anjali', 'Patel', '1995-01-26', 'Female', 'Single', '9876501012', 'anjali.patel@example.com', 'Marathahalli'],
+        ['Siddharth', 'Rao', '1992-04-03', 'Male', 'Single', '9876501013', 'siddharth.rao@example.com', 'Bellandur'],
+        ['Pooja', 'Bansal', '1994-11-19', 'Female', 'Married', '9876501014', 'pooja.bansal@example.com', 'JP Nagar'],
+        ['Nikhil', 'Agarwal', '1986-08-07', 'Male', 'Married', '9876501015', 'nikhil.agarwal@example.com', 'Vijayanagar'],
+        ['Aastha', 'Chopra', '1998-02-11', 'Female', 'Single', '9876501016', 'aastha.chopra@example.com', 'Cunningham Road'],
+      ];
 
-    // ==========================================
-    // BRANCH BLR001: 100,000 Customers & 15 Loans
-    // ==========================================
-    const TOTAL_CUSTOMERS_BLR1 = 100000;
-    const BATCH_SIZE = 500;
-    const LOAN_COUNT_BLR1 = 15;
+      const branch2Customers = [
+        ['Manish', 'Kulkarni', '1989-03-16', 'Male', 'Married', '9876502001', 'manish.kulkarni@example.com', 'Electronic City'],
+        ['Shreya', 'Deshmukh', '1996-07-24', 'Female', 'Single', '9876502002', 'shreya.deshmukh@example.com', 'Hosur Road'],
+        ['Gaurav', 'Singh', '1991-10-08', 'Male', 'Married', '9876502003', 'gaurav.singh@example.com', 'Bommasandra'],
+        ['Kritika', 'Jain', '1995-05-27', 'Female', 'Married', '9876502004', 'kritika.jain@example.com', 'Sarjapur Road'],
+        ['Varun', 'Shah', '1988-12-13', 'Male', 'Married', '9876502005', 'varun.shah@example.com', 'HSR Layout'],
+        ['Ritu', 'Mishra', '1993-09-01', 'Female', 'Single', '9876502006', 'ritu.mishra@example.com', 'Electronic City'],
+      ];
 
-    let createdAccountNumbersBLR1: string[] = [];
+      const branch1Balances = [
+        '82500.00', '145000.00', '63500.00', '218000.00',
+        '97500.00', '45200.00', '187500.00', '113000.00',
+        '76400.00', '156800.00', '92500.00', '68200.00',
+        '124500.00', '89500.00', '231000.00', '57200.00',
+      ];
 
-    // Pre-select 15 exact customer indices for loans in BLR001
-    const selectedIndicesBLR1 = new Set<number>();
-    while (selectedIndicesBLR1.size < LOAN_COUNT_BLR1) {
-      selectedIndicesBLR1.add(Math.floor(Math.random() * TOTAL_CUSTOMERS_BLR1) + 1);
-    }
+      const branch2Balances = [
+        '96500.00', '137000.00', '58200.00',
+        '186500.00', '112000.00', '74500.00',
+      ];
 
-    console.log(`👥 Generating ${TOTAL_CUSTOMERS_BLR1} customers & accounts for BLR001 in batches...`);
+      const branch1Accounts: string[] = [];
+      const branch2Accounts: string[] = [];
 
-    for (let i = 0; i < TOTAL_CUSTOMERS_BLR1; i += BATCH_SIZE) {
-      const customerBatch = [];
-      const accountBatch = [];
-      const transactionBatch = [];
+      // Helper for customer/account/initial transaction creation
+      async function createBranchCustomers(
+        customers: string[][],
+        branchId: string,
+        bankerId: string,
+        accountPrefix: string,
+        customerPrefix: string,
+        balances: string[],
+        addressPrefix: string,
+      ) {
+        const customerRows = [];
+        const accountRows = [];
+        const transactionRows = [];
 
-      for (let j = 0; j < BATCH_SIZE && (i + j) < TOTAL_CUSTOMERS_BLR1; j++) {
-        const index = i + j + 1;
-        const paddedIndex = String(index).padStart(6, '0');
-        const customerId = `CUST1_${paddedIndex}`;
-        const accountNum = `1001${String(index).padStart(8, '0')}`;
-        createdAccountNumbersBLR1.push(accountNum);
+        for (let i = 0; i < customers.length; i++) {
+          const [
+            firstName,
+            lastName,
+            dob,
+            gender,
+            maritalStatus,
+            mobile,
+            email,
+            locality,
+          ] = customers[i];
 
-        const panLetter = String.fromCharCode(65 + Math.floor(index / 10000));
-        const panNumber = String(index % 10000).padStart(4, '0');
-        const pan = `ABCD${panLetter}${panNumber}F`; 
-        const aadhaarMock = `MOCK-AADH-1-${String(index).padStart(8, '0')}`;
-        const mobile = `98${String(index).padStart(8, '0')}`.slice(0, 10);
+          const index = i + 1;
+          const customerId = `${customerPrefix}_${String(index).padStart(6, '0')}`;
+          const accountNumber = `${accountPrefix}${String(index).padStart(8, '0')}`;
+          const balance = balances[i];
 
-        // If this customer is chosen for a loan, give them a real name
-        let firstName, lastName;
-        if (selectedIndicesBLR1.has(index)) {
-          const nameIndex = index % realFirstNames.length;
-          firstName = realFirstNames[nameIndex];
-          lastName = realLastNames[nameIndex];
-        } else {
-          firstName = `User1_${index}`;
-          lastName = `LastName${index}`;
+          customerRows.push({
+            customer_id: customerId,
+            first_name: firstName,
+            last_name: lastName,
+            dob,
+            gender,
+            marital_status: maritalStatus,
+            primary_mobile: mobile,
+            secondary_phone: null,
+            email,
+            pan: `${branchId === 'BLR001' ? 'ABCD' : 'WXYZ'}${String(index).padStart(5, '0')}F`,
+            aadhaar: `MOCK-AADH-${branchId}-${String(index).padStart(8, '0')}`,
+            address_line1: `${addressPrefix}, ${locality}`,
+            city: 'Bengaluru',
+            state: 'Karnataka',
+            postal_code: branchId === 'BLR001' ? '560001' : '560100',
+            country: 'India',
+          });
+
+          const accountType = i % 4 === 0 ? 'CURRENT' : 'SAVINGS';
+
+          accountRows.push({
+            account_number: accountNumber,
+            customer_id: customerId,
+            branch_id: branchId,
+            account_type: accountType,
+            balance,
+            min_balance: accountType === 'SAVINGS' ? '500.00' : '5000.00',
+            status: 'ACTIVE',
+          });
+
+          transactionRows.push({
+            ref_number: `DEP-${branchId}-${String(index).padStart(4, '0')}`,
+            from_account: null,
+            to_account: accountNumber,
+            type: 'INITIAL_DEPOSIT',
+            amount: balance,
+            balance_after: balance,
+            banker_id: bankerId,
+            description: `Opening account deposit for ${firstName} ${lastName}`,
+          });
         }
 
-        customerBatch.push({
-          customer_id: customerId,
-          first_name: firstName,
-          last_name: lastName,
-          dob: '1990-01-01',
-          gender: index % 2 === 0 ? 'Male' : 'Female',
-          marital_status: 'Single',
-          primary_mobile: mobile,
-          secondary_phone: null,
-          email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${index}@bankmail.test`,
-          pan: pan,
-          aadhaar: aadhaarMock,
-          address_line1: `Street ${index}`,
-          city: 'Bengaluru',
-          state: 'Karnataka',
-          postal_code: '560001',
-          country: 'India',
-        });
+        await tx.insert(schema.customers).values(customerRows);
+        await tx.insert(schema.accounts).values(accountRows);
+        await tx.insert(schema.transactions).values(transactionRows);
 
-        const accountType = index % 2 === 0 ? 'SAVINGS' : 'CURRENT';
-        const initialBalance = (Math.random() * 50000 + 1000).toFixed(2);
+        return accountRows.map((account) => account.account_number);
+      }
 
-        accountBatch.push({
-          account_number: accountNum,
-          customer_id: customerId,
-          branch_id: 'BLR001',
-          account_type: accountType,
-          balance: initialBalance,
-          min_balance: accountType === 'SAVINGS' ? '500.00' : '5000.00',
+      // 3. BLR001: 16 customers
+      console.log('👥 Creating 16 customers for BLR001...');
+      const accounts1 = await createBranchCustomers(
+        branch1Customers,
+        'BLR001',
+        'BA00001',
+        '1001',
+        'CUST1',
+        branch1Balances,
+        'Flat/House',
+      );
+      branch1Accounts.push(...accounts1);
+
+      // 4. BLR002: 6 customers
+      console.log('👥 Creating 6 customers for BLR002...');
+      const accounts2 = await createBranchCustomers(
+        branch2Customers,
+        'BLR002',
+        'BA00002',
+        '2002',
+        'CUST2',
+        branch2Balances,
+        'Flat/House',
+      );
+      branch2Accounts.push(...accounts2);
+
+      // Additional realistic account transactions.
+      const additionalTransactions = [
+        {
+          ref_number: 'TXN-BLR001-001',
+          from_account: null,
+          to_account: branch1Accounts[0],
+          type: 'INITIAL_DEPOSIT',
+          amount: '25000.00',
+          balance_after: '107500.00',
+          banker_id: 'BA00001',
+          description: 'Salary credit - Aarav Sharma',
+        },
+        {
+          ref_number: 'TXN-BLR001-002',
+          from_account: branch1Accounts[1],
+          to_account: null,
+          type: 'WITHDRAWAL',
+          amount: '12000.00',
+          balance_after: '133000.00',
+          banker_id: 'BA00001',
+          description: 'ATM cash withdrawal - Priya Nair',
+        },
+        {
+          ref_number: 'TXN-BLR001-003',
+          from_account: null,
+          to_account: branch1Accounts[2],
+          type: 'INITIAL_DEPOSIT',
+          amount: '18000.00',
+          balance_after: '81500.00',
+          banker_id: 'BA00001',
+          description: 'Salary credit - Rohan Mehta',
+        },
+        {
+          ref_number: 'TXN-BLR001-004',
+          from_account: branch1Accounts[3],
+          to_account: null,
+          type: 'WITHDRAWAL',
+          amount: '15000.00',
+          balance_after: '203000.00',
+          banker_id: 'BA00001',
+          description: 'Utility and household payment - Sneha Iyer',
+        },
+        {
+          ref_number: 'TXN-BLR001-005',
+          from_account: branch1Accounts[6],
+          to_account: null,
+          type: 'WITHDRAWAL',
+          amount: '8500.00',
+          balance_after: '179000.00',
+          banker_id: 'BA00001',
+          description: 'Business expense payment - Karan Malhotra',
+        },
+        {
+          ref_number: 'TXN-BLR002-001',
+          from_account: null,
+          to_account: branch2Accounts[0],
+          type: 'INITIAL_DEPOSIT',
+          amount: '22000.00',
+          balance_after: '118500.00',
+          banker_id: 'BA00002',
+          description: 'Salary credit - Manish Kulkarni',
+        },
+        {
+          ref_number: 'TXN-BLR002-002',
+          from_account: branch2Accounts[1],
+          to_account: null,
+          type: 'WITHDRAWAL',
+          amount: '10000.00',
+          balance_after: '127000.00',
+          banker_id: 'BA00002',
+          description: 'Household payment - Shreya Deshmukh',
+        },
+        {
+          ref_number: 'TXN-BLR002-003',
+          from_account: null,
+          to_account: branch2Accounts[3],
+          type: 'INITIAL_DEPOSIT',
+          amount: '30000.00',
+          balance_after: '216500.00',
+          banker_id: 'BA00002',
+          description: 'Business income credit - Kritika Jain',
+        },
+      ];
+
+      await tx.insert(schema.transactions).values(additionalTransactions);
+
+      // Keep account balances consistent with the additional transactions.
+      await tx.update(schema.accounts)
+        .set({ balance: '107500.00' })
+        .where(sql`account_number = ${branch1Accounts[0]}`);
+
+      await tx.update(schema.accounts)
+        .set({ balance: '133000.00' })
+        .where(sql`account_number = ${branch1Accounts[1]}`);
+
+      await tx.update(schema.accounts)
+        .set({ balance: '81500.00' })
+        .where(sql`account_number = ${branch1Accounts[2]}`);
+
+      await tx.update(schema.accounts)
+        .set({ balance: '203000.00' })
+        .where(sql`account_number = ${branch1Accounts[3]}`);
+
+      await tx.update(schema.accounts)
+        .set({ balance: '179000.00' })
+        .where(sql`account_number = ${branch1Accounts[6]}`);
+
+      await tx.update(schema.accounts)
+        .set({ balance: '118500.00' })
+        .where(sql`account_number = ${branch2Accounts[0]}`);
+
+      await tx.update(schema.accounts)
+        .set({ balance: '127000.00' })
+        .where(sql`account_number = ${branch2Accounts[1]}`);
+
+      await tx.update(schema.accounts)
+        .set({ balance: '216500.00' })
+        .where(sql`account_number = ${branch2Accounts[3]}`);
+
+      function calculateEmi(
+        principal: number,
+        annualInterestRate: number,
+        tenureMonths: number,
+      ) {
+        const monthlyRate = annualInterestRate / 12 / 100;
+
+        if (monthlyRate === 0) {
+            return Number((principal / tenureMonths).toFixed(2));
+        }
+
+        const emi =
+            (principal * monthlyRate * Math.pow(1 + monthlyRate, tenureMonths)) /
+            (Math.pow(1 + monthlyRate, tenureMonths) - 1);
+
+        return Number(emi.toFixed(2));
+      }
+
+      // ============================================================
+      // 5. TWO LOANS TOTAL
+      //    - One loan in BLR001
+      //    - One loan in BLR002
+      // ============================================================
+
+      async function createLoan(
+        targetAccountNum: string,
+        branchId: string,
+        bankerId: string,
+        principal: number,
+        interestRate: number,
+        tenureMonths: number,
+        loanRef: string,
+      ) {
+        const monthlyEmi = calculateEmi(
+            principal,
+            interestRate,
+            tenureMonths,
+        );
+        const [accRecord] = await tx
+          .select()
+          .from(schema.accounts)
+          .where(sql`account_number = ${targetAccountNum}`);
+
+        if (!accRecord) {
+          throw new Error(`Account not found: ${targetAccountNum}`);
+        }
+
+        const loanAccountNumber = `${targetAccountNum}_LN`;
+
+        await tx.insert(schema.accounts).values({
+          account_number: loanAccountNumber,
+          customer_id: accRecord.customer_id,
+          branch_id: branchId,
+          account_type: 'LOAN',
+          balance: '0.00',
+          min_balance: '0.00',
           status: 'ACTIVE',
         });
 
-        transactionBatch.push({
-          ref_number: `DEP1_${Date.now()}_${index}`,
-          from_account: null,
-          to_account: accountNum,
-          type: 'INITIAL_DEPOSIT',
-          amount: initialBalance,
-          balance_after: initialBalance,
-          banker_id: 'BA00001',
-          description: `Opening account initial deposit for ${accountNum}`,
-        });
-      }
-
-      await db.insert(schema.customers).values(customerBatch);
-      await db.insert(schema.accounts).values(accountBatch);
-      await db.insert(schema.transactions).values(transactionBatch);
-
-      console.log(`BLR001 Progress: ${i + customerBatch.length}/${TOTAL_CUSTOMERS_BLR1} processed.`);
-    }
-
-    // Allocate 15 Loans for BLR001 using the pre-selected indices
-    console.log(`💸 Allocating ${LOAN_COUNT_BLR1} loans to the pre-selected real-name accounts in BLR001...`);
-
-    for (const idx of selectedIndicesBLR1) {
-      const targetAccountNum = createdAccountNumbersBLR1[idx - 1];
-      const loanAccountNumber = `${targetAccountNum}_LN`;
-      const principal = 100000.00;
-      const interestRate = 10.50; 
-      const tenureMonths = 24; 
-      const monthlyEmi = 4637.60; 
-
-      const [accRecord] = await db.select().from(schema.accounts).where(sql`account_number = ${targetAccountNum}`);
-      const currentBalance = Number(accRecord.balance);
-      const newBalance = (currentBalance + principal).toFixed(2);
-
-      await db.insert(schema.accounts).values({
-        account_number: loanAccountNumber,
-        customer_id: accRecord.customer_id,
-        branch_id: 'BLR001',
-        account_type: 'LOAN',
-        balance: '0.00',
-        min_balance: '0.00',
-        status: 'ACTIVE',
-      });
-
-      await db.insert(schema.loanDetails).values({
-        loan_account_number: loanAccountNumber,
-        disbursal_account_number: targetAccountNum,
-        principal_amount: principal.toFixed(2),
-        interest_rate: interestRate.toFixed(2),
-        tenure_months: tenureMonths,
-        monthly_emi: monthlyEmi.toFixed(2),
-        remaining_amount: (monthlyEmi * tenureMonths).toFixed(2),
-      });
-
-      const monthlyRate = interestRate / 12 / 100;
-      let balance = principal;
-      const scheduleRows = [];
-      const startDate = new Date();
-
-      for (let m = 1; m <= tenureMonths; m++) {
-        const dueDate = new Date(startDate);
-        dueDate.setMonth(startDate.getMonth() + m);
-
-        const interestComp = balance * monthlyRate;
-        const principalComp = monthlyEmi - interestComp;
-        balance = Math.max(0, balance - principalComp);
-
-        scheduleRows.push({
+        await tx.insert(schema.loanDetails).values({
           loan_account_number: loanAccountNumber,
-          installment_no: m,
-          due_date: dueDate.toISOString().split('T')[0],
-          principal_component: principalComp.toFixed(2),
-          interest_component: interestComp.toFixed(2),
-          emi_amount: monthlyEmi.toFixed(2),
-          remaining_amount: balance.toFixed(2),
-          status: 'PENDING',
+          disbursal_account_number: targetAccountNum,
+          principal_amount: principal.toFixed(2),
+          interest_rate: interestRate.toFixed(2),
+          tenure_months: tenureMonths,
+          monthly_emi: monthlyEmi.toFixed(2),
+          remaining_amount: (monthlyEmi * tenureMonths).toFixed(2),
         });
+
+        const monthlyRate = interestRate / 12 / 100;
+        let balance = principal;
+        const scheduleRows = [];
+        const startDate = new Date();
+
+        for (let m = 1; m <= tenureMonths; m++) {
+          const dueDate = new Date(startDate);
+          dueDate.setMonth(startDate.getMonth() + m);
+
+          const interestComp = balance * monthlyRate;
+          const principalComp = monthlyEmi - interestComp;
+          balance = Math.max(0, balance - principalComp);
+
+          scheduleRows.push({
+            loan_account_number: loanAccountNumber,
+            installment_no: m,
+            due_date: dueDate.toISOString().split('T')[0],
+            principal_component: principalComp.toFixed(2),
+            interest_component: interestComp.toFixed(2),
+            emi_amount: monthlyEmi.toFixed(2),
+            remaining_amount: balance.toFixed(2),
+            status: 'PENDING',
+          });
+        }
+
+        await tx.insert(schema.loanSchedules).values(scheduleRows);
+
+        const newBalance = (Number(accRecord.balance) + principal).toFixed(2);
+
+        await tx.update(schema.accounts)
+          .set({ balance: newBalance })
+          .where(sql`account_number = ${targetAccountNum}`);
+
+        await tx.insert(schema.transactions).values({
+          ref_number: loanRef,
+          from_account: loanAccountNumber,
+          to_account: targetAccountNum,
+          type: 'LOAN_DISBURSAL',
+          amount: principal.toFixed(2),
+          balance_after: newBalance,
+          banker_id: bankerId,
+          description: `Loan disbursal for ${loanAccountNumber}`,
+        });
+
+        return loanAccountNumber;
       }
 
-      await db.insert(schema.loanSchedules).values(scheduleRows);
+      // Aarav Sharma - BLR001 - Home improvement/personal loan
+      await createLoan(
+        branch1Accounts[0],
+        'BLR001',
+        'BA00001',
+        200000,
+        10.5,
+        36,
+        'DSB1-000001',
+      );
 
-      await db.update(schema.accounts)
-        .set({ balance: newBalance })
-        .where(sql`account_number = ${targetAccountNum}`);
-
-      await db.insert(schema.transactions).values({
-        ref_number: `DSB1-${Math.floor(Math.random() * 900000 + 100000)}`,
-        from_account: loanAccountNumber,
-        to_account: targetAccountNum,
-        type: 'LOAN_DISBURSAL',
-        amount: principal.toFixed(2),
-        balance_after: newBalance,
-        banker_id: 'BA00001',
-        description: `Loan Disbursal for loan account ${loanAccountNumber}`,
-      });
-    }
-
-    // ==========================================
-    // BRANCH BLR002: 15 Customers & 1 Loan
-    // ==========================================
-    const TOTAL_CUSTOMERS_BLR2 = 15;
-    const LOAN_COUNT_BLR2 = 1;
-    let createdAccountNumbersBLR2: string[] = [];
-
-    console.log(`👥 Generating ${TOTAL_CUSTOMERS_BLR2} customers & accounts for BLR002...`);
-
-    const customerBatchBLR2 = [];
-    const accountBatchBLR2 = [];
-    const transactionBatchBLR2 = [];
-
-    for (let index = 1; index <= TOTAL_CUSTOMERS_BLR2; index++) {
-      const paddedIndex = String(index).padStart(6, '0');
-      const customerId = `CUST2_${paddedIndex}`;
-      const accountNum = `2002${String(index).padStart(8, '0')}`;
-      createdAccountNumbersBLR2.push(accountNum);
-
-      const pan = `WXYZ1${String(index).padStart(4, '0')}F`;
-      const aadhaarMock = `MOCK-AADH-2-${String(index).padStart(8, '0')}`;
-      const mobile = `97${String(index).padStart(8, '0')}`.slice(0, 10);
-
-      // All 15 customers in BLR002 get real names since the group is small
-      const firstName = realFirstNames[(index + 10) % realFirstNames.length];
-      const lastName = realLastNames[(index + 10) % realLastNames.length];
-
-      customerBatchBLR2.push({
-        customer_id: customerId,
-        first_name: firstName,
-        last_name: lastName,
-        dob: '1992-05-15',
-        gender: index % 2 === 0 ? 'Male' : 'Female',
-        marital_status: 'Married',
-        primary_mobile: mobile,
-        secondary_phone: null,
-        email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}2_${index}@bankmail.test`,
-        pan: pan,
-        aadhaar: aadhaarMock,
-        address_line1: `Tech Park Street ${index}`,
-        city: 'Bengaluru',
-        state: 'Karnataka',
-        postal_code: '560100',
-        country: 'India',
-      });
-
-      const accountType = index % 2 === 0 ? 'SAVINGS' : 'CURRENT';
-      const initialBalance = (Math.random() * 50000 + 5000).toFixed(2);
-
-      accountBatchBLR2.push({
-        account_number: accountNum,
-        customer_id: customerId,
-        branch_id: 'BLR002',
-        account_type: accountType,
-        balance: initialBalance,
-        min_balance: accountType === 'SAVINGS' ? '500.00' : '5000.00',
-        status: 'ACTIVE',
-      });
-
-      transactionBatchBLR2.push({
-        ref_number: `DEP2_${Date.now()}_${index}`,
-        from_account: null,
-        to_account: accountNum,
-        type: 'INITIAL_DEPOSIT',
-        amount: initialBalance,
-        balance_after: initialBalance,
-        banker_id: 'BA00002',
-        description: `Opening account initial deposit for ${accountNum}`,
-      });
-    }
-
-    await db.insert(schema.customers).values(customerBatchBLR2);
-    await db.insert(schema.accounts).values(accountBatchBLR2);
-    await db.insert(schema.transactions).values(transactionBatchBLR2);
-
-    // Allocate 1 Loan for BLR002
-    console.log(`💸 Allocating ${LOAN_COUNT_BLR2} loan to a random account in BLR002...`);
-    const randomIdxBLR2 = Math.floor(Math.random() * TOTAL_CUSTOMERS_BLR2);
-    const targetAccountNumBLR2 = createdAccountNumbersBLR2[randomIdxBLR2];
-    const loanAccountNumberBLR2 = `${targetAccountNumBLR2}_LN`;
-    const principalBLR2 = 150000.00;
-    const interestRateBLR2 = 11.00;
-    const tenureMonthsBLR2 = 36;
-    const monthlyEmiBLR2 = 4912.21;
-
-    const [accRecordBLR2] = await db.select().from(schema.accounts).where(sql`account_number = ${targetAccountNumBLR2}`);
-    const currentBalanceBLR2 = Number(accRecordBLR2.balance);
-    const newBalanceBLR2 = (currentBalanceBLR2 + principalBLR2).toFixed(2);
-
-    await db.insert(schema.accounts).values({
-      account_number: loanAccountNumberBLR2,
-      customer_id: accRecordBLR2.customer_id,
-      branch_id: 'BLR002',
-      account_type: 'LOAN',
-      balance: '0.00',
-      min_balance: '0.00',
-      status: 'ACTIVE',
-    });
-
-    await db.insert(schema.loanDetails).values({
-      loan_account_number: loanAccountNumberBLR2,
-      disbursal_account_number: targetAccountNumBLR2,
-      principal_amount: principalBLR2.toFixed(2),
-      interest_rate: interestRateBLR2.toFixed(2),
-      tenure_months: tenureMonthsBLR2,
-      monthly_emi: monthlyEmiBLR2.toFixed(2),
-      remaining_amount: (monthlyEmiBLR2 * tenureMonthsBLR2).toFixed(2),
-    });
-
-    const monthlyRateBLR2 = interestRateBLR2 / 12 / 100;
-    let balanceBLR2 = principalBLR2;
-    const scheduleRowsBLR2 = [];
-    const startDateBLR2 = new Date();
-
-    for (let m = 1; m <= tenureMonthsBLR2; m++) {
-      const dueDate = new Date(startDateBLR2);
-      dueDate.setMonth(startDateBLR2.getMonth() + m);
-
-      const interestComp = balanceBLR2 * monthlyRateBLR2;
-      const principalComp = monthlyEmiBLR2 - interestComp;
-      balanceBLR2 = Math.max(0, balanceBLR2 - principalComp);
-
-      scheduleRowsBLR2.push({
-        loan_account_number: loanAccountNumberBLR2,
-        installment_no: m,
-        due_date: dueDate.toISOString().split('T')[0],
-        principal_component: principalComp.toFixed(2),
-        interest_component: interestComp.toFixed(2),
-        emi_amount: monthlyEmiBLR2.toFixed(2),
-        remaining_amount: balanceBLR2.toFixed(2),
-        status: 'PENDING',
-      });
-    }
-
-    await db.insert(schema.loanSchedules).values(scheduleRowsBLR2);
-
-    await db.update(schema.accounts)
-      .set({ balance: newBalanceBLR2 })
-      .where(sql`account_number = ${targetAccountNumBLR2}`);
-
-    await db.insert(schema.transactions).values({
-      ref_number: `DSB2-${Math.floor(Math.random() * 900000 + 100000)}`,
-      from_account: loanAccountNumberBLR2,
-      to_account: targetAccountNumBLR2,
-      type: 'LOAN_DISBURSAL',
-      amount: principalBLR2.toFixed(2),
-      balance_after: newBalanceBLR2,
-      banker_id: 'BA00002',
-      description: `Loan Disbursal for loan account ${loanAccountNumberBLR2}`,
+      // Manish Kulkarni - BLR002 - Vehicle loan
+      await createLoan(
+        branch2Accounts[0],
+        'BLR002',
+        'BA00002',
+        150000,
+        11.0,
+        36,
+        'DSB2-000001',
+      );
     });
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);
-    console.log(`✅ Multi-branch synchronized seeding completed successfully in ${duration} seconds!`);
+
+    console.log('');
+    console.log('✅ Realistic demo database seeding completed!');
+    console.log(`🏢 Branches: 2`);
+    console.log(`👨‍💼 Bankers: 2 (1 per branch)`);
+    console.log(`👥 BLR001 customers: ${branch1Customers.length}`);
+    console.log(`👥 BLR002 customers: ${branch2Customers.length}`);
+    console.log(`💸 Loans: 2`);
+    console.log(`⏱️ Completed in ${duration} seconds`);
+
     process.exit(0);
   } catch (error) {
-    console.error('❌ Error seeding multi-branch database:', error);
+    console.error('❌ Error seeding database:', error);
     process.exit(1);
   }
 }
