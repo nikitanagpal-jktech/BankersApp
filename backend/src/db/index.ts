@@ -4,8 +4,8 @@ import { Pool } from 'pg';
 import * as schema from './schema';
 import { ENV } from '../config/env';
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+export const pool = new Pool({
+  connectionString: ENV.DATABASE_URL,
   ssl: {
     rejectUnauthorized: false,
   },
