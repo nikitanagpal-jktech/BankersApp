@@ -15,6 +15,13 @@
       "when": 1787723711032,
       "tag": "0001_fluffy_pete_wisdom",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788771729052,
+      "tag": "0002_massive_lila_cheney",
+      "breakpoints": true
     }
   ]
 }

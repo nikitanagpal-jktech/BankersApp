@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { db } from './index';
 import * as schema from './schema';
 import { sql } from 'drizzle-orm';
@@ -36,9 +37,7 @@ async function seedDatabase() {
     ];
 
     try {
-        // Wrap the entire seeding process inside a transaction for atomicity
         await db.transaction(async (tx) => {
-            // Clear old data
             console.log('🧹 Clearing existing database tables...');
             await tx.delete(schema.loanSchedules);
             await tx.delete(schema.loanDetails);
@@ -50,7 +49,6 @@ async function seedDatabase() {
 
             const hashedPassword = await bcrypt.hash('Banker@123', 10);
 
-            // 1. Two branches
             await tx.insert(schema.branches).values([
                 {
                     branch_id: 'BLR001',
@@ -66,7 +64,6 @@ async function seedDatabase() {
                 },
             ]);
 
-            // 2. One banker per branch
             await tx.insert(schema.bankers).values([
                 {
                     banker_id: 'BA00001',
@@ -99,7 +96,6 @@ async function seedDatabase() {
             const branch1Accounts: string[] = [];
             const branch2Accounts: string[] = [];
 
-            // Helper for customer/account/initial transaction creation
             async function createBranchCustomers(
                 customers: string[][],
                 branchId: string,
@@ -180,7 +176,6 @@ async function seedDatabase() {
                 return accountRows.map((account) => account.account_number);
             }
 
-            // 3. BLR001: 16 customers
             console.log('👥 Creating 16 customers for BLR001...');
             const accounts1 = await createBranchCustomers(
                 branch1Customers,
@@ -193,7 +188,6 @@ async function seedDatabase() {
             );
             branch1Accounts.push(...accounts1);
 
-            // 4. BLR002: 6 customers
             console.log('👥 Creating 6 customers for BLR002...');
             const accounts2 = await createBranchCustomers(
                 branch2Customers,
@@ -206,7 +200,6 @@ async function seedDatabase() {
             );
             branch2Accounts.push(...accounts2);
 
-            // Additional realistic account transactions.
             const additionalTransactions = [
                 {
                     ref_number: 'TXN-BLR001-001',
@@ -292,7 +285,6 @@ async function seedDatabase() {
 
             await tx.insert(schema.transactions).values(additionalTransactions);
 
-            // Keep account balances consistent with the additional transactions.
             await tx.update(schema.accounts)
                 .set({ balance: '107500.00' })
                 .where(sql`account_number = ${branch1Accounts[0]}`);
@@ -342,12 +334,6 @@ async function seedDatabase() {
 
                 return Number(emi.toFixed(2));
             }
-
-            // ============================================================
-            // 5. TWO LOANS TOTAL
-            //    - One loan in BLR001
-            //    - One loan in BLR002
-            // ============================================================
 
             async function createLoan(
                 targetAccountNum: string,
@@ -441,7 +427,6 @@ async function seedDatabase() {
                 return loanAccountNumber;
             }
 
-            // Aarav Sharma - BLR001 - Home improvement/personal loan
             await createLoan(
                 branch1Accounts[0],
                 'BLR001',
@@ -452,7 +437,6 @@ async function seedDatabase() {
                 'DSB1-000001',
             );
 
-            // Manish Kulkarni - BLR002 - Vehicle loan
             await createLoan(
                 branch2Accounts[0],
                 'BLR002',
