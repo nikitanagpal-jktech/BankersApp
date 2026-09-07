@@ -26,6 +26,10 @@ app.use('/api/banker/accounts', accountRoutes);
 app.use('/api/banker/customers', customerRoutes);
 app.use('/api/banker/transactions', transactionRoutes);
 app.use('/api/banker/loans', loanRoutes);
+// Root Route
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', message: 'BankersApp CBS Server is running successfully' });
+});
 
 app.listen(ENV.PORT, () => {
   console.log(`\n==================================================`);
