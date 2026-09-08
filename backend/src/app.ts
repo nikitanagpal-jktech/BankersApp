@@ -7,6 +7,18 @@ import customerRoutes from './routes/customerRoutes';
 import transactionRoutes from './routes/transactionRoutes';
 import loanRoutes from './routes/loanRoutes';
 import { ENV } from './config/env';
+import { migrate } from 'drizzle-orm/node-postgres/migrator';
+import { db } from './db'; // Adjust path to your Drizzle db instance
+
+// Run migrations on startup
+(async () => {
+  try {
+    await migrate(db, { migrationsFolder: './drizzle' });
+    console.log('Database migrations completed successfully');
+  } catch (error) {
+    console.error('Migration failed:', error);
+  }
+})();
 
 const app = express();
 
