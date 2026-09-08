@@ -9,12 +9,12 @@
     "start": "node dist/app.js",
     "db:push": "drizzle-kit push",
     "db:seed": "tsx src/db/seed.ts",
-    "db:reset":"tsx src/db/reset.ts"
+    "db:reset": "tsx src/db/reset.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
-    "cors": "^2.8.5",
+    "cors": "^2.8.6",
     "date-fns": "^4.4.0",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.45.2",

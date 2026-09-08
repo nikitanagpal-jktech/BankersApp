@@ -7,7 +7,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'http://localhost:5000', // Ensure this matches your Express backend port
+        target: 'https://bankersapp-791270280946.us-central1.run.app', 
         changeOrigin: true,
         secure: false,
       },
