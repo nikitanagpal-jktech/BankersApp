@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FileText, User, ChevronLeft, ChevronRight, ArrowLeft, CreditCard, Eye, EyeOff } from 'lucide-react';
 import { AccountData, CustomerKYC, LinkedAccount, TransactionRecord } from '../types';
 import { formatDateDMY } from '../utils/formatters';
+import { apiFetch as fetch } from '../utils/api';
 
 interface Props {
   initialAccount?: string;

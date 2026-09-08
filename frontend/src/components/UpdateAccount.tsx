@@ -3,6 +3,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { UserCheck, Search, User, Phone, MapPin, Calendar, CreditCard, Building2, CheckCircle2 } from 'lucide-react';
 import { formatDateDMY } from '../utils/formatters';
+import { apiFetch as fetch } from '../utils/api';
 
 const MaskedDateInput = forwardRef<HTMLInputElement, any>(({ value, onClick, onChange, placeholder }, ref) => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

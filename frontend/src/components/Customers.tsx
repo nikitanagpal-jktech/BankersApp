@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Search, Eye, ArrowLeft, Shield, Phone, Mail, MapPin, CreditCard, AlertCircle, ExternalLink } from 'lucide-react';
 import { TabType } from './Sidebar';
+import { apiFetch as fetch } from '../utils/api';
 
 interface CustomersProps {
-  onSelectAccount?: (accNum: string, origin: TabType) => void;
-  initialSelectedCustomerId?: string | null;
-  onSelectCustomer?: (custId: string | null) => void;
+    onSelectAccount?: (accNum: string, origin: TabType) => void;
+    initialSelectedCustomerId?: string | null;
+    onSelectCustomer?: (custId: string | null) => void;
 }
 
-export const Customers: React.FC<CustomersProps> = ({ 
-  onSelectAccount, 
-  initialSelectedCustomerId = null, 
-  onSelectCustomer 
+export const Customers: React.FC<CustomersProps> = ({
+    onSelectAccount,
+    initialSelectedCustomerId = null,
+    onSelectCustomer
 }) => {
     const [customers, setCustomers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -62,7 +63,7 @@ export const Customers: React.FC<CustomersProps> = ({
             const res = await fetch(url, { credentials: 'include' });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Failed to load customers.');
-            
+
             setCustomers(data.customers || []);
             if (data.pagination) {
                 setTotalPages(data.pagination.totalPages || 1);

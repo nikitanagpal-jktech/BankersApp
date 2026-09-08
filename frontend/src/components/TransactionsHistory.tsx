@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { History, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { TransactionRecord } from '../types';
 import { formatDateDMY } from '../utils/formatters';
+import { apiFetch as fetch } from '../utils/api';
 
 export const TransactionsHistory: React.FC = () => {
   const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
@@ -15,7 +16,7 @@ export const TransactionsHistory: React.FC = () => {
     try {
       const res = await fetch(`/api/banker/transactions?page=${page}`, { credentials: 'include' });
       const data = await res.json();
-      
+
       setTransactions(data.transactions || data.data || []);
       if (data.pagination) {
         setTotalPages(data.pagination.totalPages || 1);

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Building, Search, UserCheck, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { CustomerKYC } from '../types';
+import { apiFetch as fetch } from '../utils/api';
 
 interface Props {
   onSuccess?: (accountNumber: string) => void;

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Users, RefreshCw, Search, ArrowUpRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatDateDMY } from '../utils/formatters';
 import { useBankerAuth } from '../context/BankerAuthContext';
+import { apiFetch as fetch } from '../utils/api';
 
 interface AccountItem {
   account_number: string;

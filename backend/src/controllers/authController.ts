@@ -56,7 +56,7 @@ export async function loginBanker(req: Request, res: Response) {
     res.cookie('banker_token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       path: '/',
     });
 

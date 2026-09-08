@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CreditCard, CheckCircle2, AlertCircle, Search, ArrowRight } from 'lucide-react';
 import { useBankerAuth } from '../context/BankerAuthContext';
+import { apiFetch as fetch } from '../utils/api';
 
 export const LoanEmi: React.FC = () => {
   const { logout } = useBankerAuth();
@@ -8,7 +9,7 @@ export const LoanEmi: React.FC = () => {
   const [loanData, setLoanData] = useState<any | null>(null);
   const [customerAccounts, setCustomerAccounts] = useState<any[]>([]);
   const [schedule, setSchedule] = useState<any[]>([]);
-  
+
   // Payment states
   const [paymentMode, setPaymentMode] = useState<'CASH' | 'ACCOUNT'>('CASH');
   const [selectedAccountNum, setSelectedAccountNum] = useState('');
@@ -168,20 +169,20 @@ export const LoanEmi: React.FC = () => {
             <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: '8px' }}>PAYMENT MODE</label>
             <div style={{ display: 'flex', gap: '24px', fontSize: '13px' }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 600 }}>
-                <input 
-                  type="radio" 
-                  name="payMode" 
-                  checked={paymentMode === 'CASH'} 
-                  onChange={() => setPaymentMode('CASH')} 
+                <input
+                  type="radio"
+                  name="payMode"
+                  checked={paymentMode === 'CASH'}
+                  onChange={() => setPaymentMode('CASH')}
                 />
                 Pay via Cash (OTC)
               </label>
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 600 }}>
-                <input 
-                  type="radio" 
-                  name="payMode" 
-                  checked={paymentMode === 'ACCOUNT'} 
-                  onChange={() => setPaymentMode('ACCOUNT')} 
+                <input
+                  type="radio"
+                  name="payMode"
+                  checked={paymentMode === 'ACCOUNT'}
+                  onChange={() => setPaymentMode('ACCOUNT')}
                 />
                 Pay from Customer Account
               </label>

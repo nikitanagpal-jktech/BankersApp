@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useBankerAuth } from '../context/BankerAuthContext';
 import { LoanRecord } from '../types';
+import { apiFetch as fetch } from '../utils/api';
 
 interface Loan extends LoanRecord {
   customer_id: string;
@@ -54,7 +55,7 @@ export const LoanDetails = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
-  
+
 
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
   const [schedule, setSchedule] = useState<ScheduleItem[]>([]);

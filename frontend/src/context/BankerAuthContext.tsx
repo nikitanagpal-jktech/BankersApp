@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { BankerProfile } from '../types';
+import { apiFetch as fetch } from '../utils/api';
 
 interface BankerAuthContextType {
   banker: BankerProfile | null;
@@ -79,7 +80,7 @@ export const BankerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         });
         // Inside your session checks or API handlers, if a 401 or 403 occurs:
         if (res.status === 401 || res.status === 403) {
-            logout('Your session has expired. Please log in again.');
+          logout('Your session has expired. Please log in again.');
         }
 
         if (res.ok) {
