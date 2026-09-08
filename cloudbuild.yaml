@@ -19,7 +19,6 @@ steps:
       - "us-central1"
       - "--allow-unauthenticated"
       - "--add-cloudsql-instances=project-8831b09b-a69e-4697-839:us-central1:bankers-db-instance"
-      - "--set-secrets=DATABASE_URL=bankers-database-url:latest"
-
+      - "--set-secrets=DATABASE_URL=bankers-database-url:latest,JWT_SECRET=jwt-secret:latest"
 options:
   logging: CLOUD_LOGGING_ONLY
